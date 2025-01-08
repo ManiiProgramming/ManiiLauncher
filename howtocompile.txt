@@ -1,0 +1,11 @@
+-----basic-----
+pyinstaller --onefile your_script.py
+
+-----with icon-----
+pyinstaller --onefile --icon=your_icon.ico your_script.py
+
+-----for gui apps-----
+pyinstaller --onefile --noconsole your_script.py
+
+NOTE: You need to have pyinstaller on your computer
+To Intall: pip install pyinstaller
