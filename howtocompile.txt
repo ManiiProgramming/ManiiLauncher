@@ -8,8 +8,4 @@ pyinstaller --onefile --icon=your_icon.ico your_script.py
 pyinstaller --onefile --noconsole your_script.py
 
 NOTE: You need to have pyinstaller on your computer
-<<<<<<< HEAD
 To Install: pip install pyinstaller
-=======
-To Intall: pip install pyinstaller
->>>>>>> 8fb8267eebd7d75f0913957fd2323476483821a8
