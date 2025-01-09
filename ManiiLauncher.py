@@ -2,7 +2,7 @@ import zipfile
 import os
 import shutil
 import requests
-from os import system as sys
+import time
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -66,16 +66,19 @@ try:
 
     delete_directory(extract_to1)
     delete_directory(extract_to2)
-    print("NOTE: This part is only to check for existing files and remove them!")
+    print("\nNOTE: This part is only to check for existing files and remove them!\n\n")
 
     download_file(schematics_url, schematics_zip)
     download_file(mods_url, mods_zip)
 
     input("Mods and Schematics have been downloaded. Press enter to continue...")
-
+    os.system("cls")
+    time.sleep(1) # 1 second of sleep gives the effect that the program is actually doing something even though the exctracted files are very small in size.
     extract_zip(schematics_zip, extract_to1)
+    time.sleep(1)
+    print("\n")
     extract_zip(mods_zip, extract_to2)
-
+    
     input("Extraction complete. Press enter to delete excessive files and exit.")
 
     delete_file(r"mods.zip")
