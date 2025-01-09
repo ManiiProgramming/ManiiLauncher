@@ -5,27 +5,21 @@ import requests
 import time
 import sys
 
-# Get the directory where the script is located (or where the executable is running from)
 if getattr(sys, 'frozen', False):
-    # Running as a bundled executable
     script_dir = sys._MEIPASS
 else:
-    # Running as a script
     script_dir = os.path.dirname(os.path.realpath(__file__))
 
-# Define paths for downloaded zip files
 downloads_folder = os.path.join(script_dir, "ManiiLauncher Downloads")
 schematics_zip = os.path.join(downloads_folder, "schematics.zip")
 mods_zip = os.path.join(downloads_folder, "mods.zip")
 
-# Define the appdata paths for extraction
-appdata = os.environ.get('APPDATA')
-schematics_path = r"\.minecraft\schematics"
-mods_path = r"\.minecraft\mods"
-extract_to1 = os.path.join(appdata, schematics_path)
-extract_to2 = os.path.join(appdata, mods_path)
+user_home = os.environ.get('USERPROFILE')
+appdata = os.path.join(user_home, "AppData", "Roaming")
+minecraft_path = os.path.join(appdata, ".minecraft")
+schematics_path = os.path.join(minecraft_path, "schematics")
+mods_path = os.path.join(minecraft_path, "mods")
 
-# URLs for downloading the mods and schematics
 schematics_url = "https://github.com/ManiiProgramming/ManiiLauncher/releases/download/ModsAndSchematics/schematics.zip"
 mods_url = "https://github.com/ManiiProgramming/ManiiLauncher/releases/download/ModsAndSchematics/mods.zip"
 
@@ -43,21 +37,24 @@ def download_file(url, destination_path):
         response.raise_for_status()
         with open(destination_path, 'wb') as f:
             f.write(response.content)
-        print(f"Downloaded {url} to {destination_path}")
+        print(f"\nDownloaded {url} to {destination_path}")
     except requests.exceptions.RequestException as e:
-        print(f"Error downloading {url}: {e}")
+        print(f"\nError downloading {url}: {e}")
 
 def extract_zip(zip_path, extract_to):
     try:
+        if not os.path.exists(extract_to):
+            os.makedirs(extract_to)
+            print(f"Directory created for extraction: {extract_to}")
         with zipfile.ZipFile(zip_path) as zf:
             file_list = zf.namelist()
-            print(f"Files in archive: {file_list}")
+            print(f"\nFiles in archive: {file_list}")
             zf.extractall(path=extract_to)
-        print(f"Extraction of {zip_path} completed.")
+        print(f"\nExtraction of {zip_path} completed to {extract_to}")
     except zipfile.BadZipFile:
-        print(f"Error: {zip_path} is not a valid zip file.")
+        print(f"\nError: {zip_path} is not a valid zip file.")
     except Exception as e:
-        print(f"Error extracting {zip_path}: {e}")
+        print(f"\nError extracting {zip_path}: {e}")
 
 def delete_file(file_path):
     if os.path.exists(file_path):
@@ -77,32 +74,30 @@ def delete_directory(directory):
         print(f"Error deleting {directory}: {e}")
 
 try:
-    # Ensure the 'ManiiLauncher Downloads' directory exists
     create_directory(downloads_folder)
 
-    # Delete any pre-existing files and directories from previous runs
     delete_file(schematics_zip)
     delete_file(mods_zip)
-    delete_directory(extract_to1)
-    delete_directory(extract_to2)
+    delete_directory(schematics_path)
+    delete_directory(mods_path)
     print("\nNOTE: This part is only to check for existing files and remove them!\n\n")
 
-    # Download the files
     download_file(schematics_url, schematics_zip)
+    print('\n')
     download_file(mods_url, mods_zip)
 
-    input("Mods and Schematics have been downloaded. Press enter to continue...")
+    input("\n\nMods and Schematics have been downloaded. Press enter to continue...")
     os.system("cls") 
-    time.sleep(1)  # Sleep to give a slight delay to make it look like something is happening
+    time.sleep(1)  # Sleep to give a slight delay to make it look like something is happening (Zip's are too light to take time)
 
-    # Extract the downloaded files
-    extract_zip(schematics_zip, extract_to1)
+    extract_zip(schematics_zip, schematics_path)
     time.sleep(1)
-    extract_zip(mods_zip, extract_to2)
+    print("\n\n\n")
+    extract_zip(mods_zip, mods_path)
     
-    input("Extraction complete. Press enter to delete downloaded files and exit...")
+    input("\n\nExtraction complete. Press enter to delete downloaded files and exit...")
 
-    # Clean up the downloaded files
+    delete_directory(downloads_folder)
     delete_file(schematics_zip)
     delete_file(mods_zip)
 
