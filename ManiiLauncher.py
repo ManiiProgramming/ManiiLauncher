@@ -4,6 +4,7 @@ import shutil
 import requests
 import time
 import sys
+from tqdm import tqdm
 
 if getattr(sys, 'frozen', False):
     script_dir = sys._MEIPASS
@@ -32,12 +33,19 @@ def create_directory(directory_path):
 
 def download_file(url, destination_path):
     try:
-        print(f"Downloading {url}...")
-        response = requests.get(url)
+        response = requests.get(url, stream=True)
         response.raise_for_status()
-        with open(destination_path, 'wb') as f:
-            f.write(response.content)
-        print(f"\nDownloaded {url} to {destination_path}")
+        total_size = int(response.headers.get('content-length', 0))
+        with open(destination_path, 'wb') as f, tqdm(
+            desc=f"Downloading {os.path.basename(destination_path)}",
+            total=total_size,
+            unit='B',
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as bar:
+            for chunk in response.iter_content(chunk_size=1024):
+                f.write(chunk)
+                bar.update(len(chunk))
     except requests.exceptions.RequestException as e:
         print(f"\nError downloading {url}: {e}")
 
@@ -88,7 +96,7 @@ try:
 
     input("\n\nMods and Schematics have been downloaded. Press enter to continue...")
     os.system("cls") 
-    time.sleep(1)  # Sleep to give a slight delay to make it look like something is happening (Zip's are too light to take time)
+    time.sleep(1)
 
     extract_zip(schematics_zip, schematics_path)
     time.sleep(1)

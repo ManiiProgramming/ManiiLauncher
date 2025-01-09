@@ -4,6 +4,7 @@ import shutil
 import requests
 import time
 import sys
+from tqdm import tqdm
 
 if getattr(sys, 'frozen', False):
     script_dir = sys._MEIPASS
@@ -26,18 +27,22 @@ mods_url = "https://github.com/ManiiProgramming/ManiiLauncher/releases/download/
 def create_directory(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
-        print(f"Directory created: {directory_path}")
-    else:
-        print(f"Directory already exists: {directory_path}")
 
 def download_file(url, destination_path):
     try:
-        print(f"Downloading {url}...")
-        response = requests.get(url)
+        response = requests.get(url, stream=True)
         response.raise_for_status()
-        with open(destination_path, 'wb') as f:
-            f.write(response.content)
-        print(f"\nDownloaded {url} to {destination_path}")
+        total_size = int(response.headers.get('content-length', 0))
+        with open(destination_path, 'wb') as f, tqdm(
+            desc=f"Downloading {os.path.basename(destination_path)}",
+            total=total_size,
+            unit='B',
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as bar:
+            for chunk in response.iter_content(chunk_size=1024):
+                f.write(chunk)
+                bar.update(len(chunk))
     except requests.exceptions.RequestException as e:
         print(f"\nError downloading {url}: {e}")
 
@@ -45,12 +50,8 @@ def extract_zip(zip_path, extract_to):
     try:
         if not os.path.exists(extract_to):
             os.makedirs(extract_to)
-            print(f"Directory created for extraction: {extract_to}")
         with zipfile.ZipFile(zip_path) as zf:
-            file_list = zf.namelist()
-            print(f"\nFiles in archive: {file_list}")
             zf.extractall(path=extract_to)
-        print(f"\nExtraction of {zip_path} completed to {extract_to}")
     except zipfile.BadZipFile:
         print(f"\nError: {zip_path} is not a valid zip file.")
     except Exception as e:
@@ -59,17 +60,11 @@ def extract_zip(zip_path, extract_to):
 def delete_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
-        print(f"Deleted the file: {file_path}")
-    else:
-        print(f"File not found: {file_path}")
 
 def delete_directory(directory):
     try:
         if os.path.exists(directory):
             shutil.rmtree(directory)
-            print(f"Deleted the folder {directory} and all the contents.")
-        else:
-            print(f"Folder {directory} doesn't exist.")
     except Exception as e:
         print(f"Error deleting {directory}: {e}")
 
@@ -80,19 +75,12 @@ try:
     delete_file(mods_zip)
     delete_directory(schematics_path)
     delete_directory(mods_path)
-    print("\nNOTE: This part is only to check for existing files and remove them!\n\n")
 
     download_file(schematics_url, schematics_zip)
-    print('\n')
     download_file(mods_url, mods_zip)
 
-    os.system("cls") 
-
     extract_zip(schematics_zip, schematics_path)
-    
-    print("\n\n\n")
     extract_zip(mods_zip, mods_path)
-    
 
     delete_directory(downloads_folder)
     delete_file(schematics_zip)
