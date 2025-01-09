@@ -4,19 +4,30 @@ import shutil
 import requests
 import time
 
+# Get the directory where the script is located
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-schematics_zip = os.path.join(script_dir, "schematics.zip")
-mods_zip = os.path.join(script_dir, "mods.zip")
+# Define paths for downloaded zip files
+schematics_zip = os.path.join(script_dir, r"ManiiLauncher Downloads\schematics.zip")
+mods_zip = os.path.join(script_dir, r"ManiiLauncher Downloads\mods.zip")
 
+# Define the appdata paths for extraction
 appdata = os.environ.get('APPDATA')
 schematics_path = r"\.minecraft\schematics"
 mods_path = r"\.minecraft\mods"
 extract_to1 = appdata + schematics_path
 extract_to2 = appdata + mods_path
 
+# URLs for downloading the mods and schematics
 schematics_url = "https://github.com/ManiiProgramming/ManiiLauncher/releases/download/ModsAndSchematics/schematics.zip"
 mods_url = "https://github.com/ManiiProgramming/ManiiLauncher/releases/download/ModsAndSchematics/mods.zip"
+
+def create_directory(directory_path):
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+        print(f"Directory created: {directory_path}")
+    else:
+        print(f"Directory already exists: {directory_path}")
 
 def download_file(url, destination_path):
     try:
@@ -41,6 +52,13 @@ def extract_zip(zip_path, extract_to):
     except Exception as e:
         print(f"Error extracting {zip_path}: {e}")
 
+def delete_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print(f"Deleted the file: {file_path}")
+    else:
+        print(f"File not found: {file_path}")
+
 def delete_directory(directory):
     try:
         if os.path.exists(directory):
@@ -51,38 +69,33 @@ def delete_directory(directory):
     except Exception as e:
         print(f"Error deleting {directory}: {e}")
 
-def delete_file(file_path):
-    if os.path.exists(file_path):
-        os.remove(file_path)
-        print(f"Deleted the file: {file_path}")
-    else:
-        print(f"File not found: {file_path}")
-
-
-
 try:
-    delete_file(r"mods.zip")
-    delete_file(r"schematics.zip")
-
+    delete_directory(r"ManiiLauncher Downloads")
+    create_directory(r"ManiiLauncher Downloads")
+    delete_file(schematics_zip)
+    delete_file(mods_zip)
     delete_directory(extract_to1)
     delete_directory(extract_to2)
     print("\nNOTE: This part is only to check for existing files and remove them!\n\n")
+
 
     download_file(schematics_url, schematics_zip)
     download_file(mods_url, mods_zip)
 
     input("Mods and Schematics have been downloaded. Press enter to continue...")
-    os.system("cls")
-    time.sleep(1) # 1 second of sleep gives the effect that the program is actually doing something even though the exctracted files are very small in size.
+    os.system("cls") 
+    time.sleep(1)  # Sleep to give a slight delay to make it look like something is happening
+    
+
     extract_zip(schematics_zip, extract_to1)
-    time.sleep(1)
-    print("\n")
+    time.sleep(1) 
     extract_zip(mods_zip, extract_to2)
     
-    input("Extraction complete. Press enter to delete excessive files and exit.")
+    input("Extraction complete. Press enter to delete downloaded files and exit...")
 
-    delete_file(r"mods.zip")
-    delete_file(r"schematics.zip")
+    delete_directory(r"ManiiLauncher Downloads")
+    delete_file(schematics_zip)
+    delete_file(mods_zip)
 
 except Exception as e:
     print(f"Unexpected error: {e}")
