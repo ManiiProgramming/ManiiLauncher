@@ -3,20 +3,27 @@ import os
 import shutil
 import requests
 import time
+import sys
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.realpath(__file__))
+# Get the directory where the script is located (or where the executable is running from)
+if getattr(sys, 'frozen', False):
+    # Running as a bundled executable
+    script_dir = sys._MEIPASS
+else:
+    # Running as a script
+    script_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Define paths for downloaded zip files
-schematics_zip = os.path.join(script_dir, r"ManiiLauncher Downloads\schematics.zip")
-mods_zip = os.path.join(script_dir, r"ManiiLauncher Downloads\mods.zip")
+downloads_folder = os.path.join(script_dir, "ManiiLauncher Downloads")
+schematics_zip = os.path.join(downloads_folder, "schematics.zip")
+mods_zip = os.path.join(downloads_folder, "mods.zip")
 
 # Define the appdata paths for extraction
 appdata = os.environ.get('APPDATA')
 schematics_path = r"\.minecraft\schematics"
 mods_path = r"\.minecraft\mods"
-extract_to1 = appdata + schematics_path
-extract_to2 = appdata + mods_path
+extract_to1 = os.path.join(appdata, schematics_path)
+extract_to2 = os.path.join(appdata, mods_path)
 
 # URLs for downloading the mods and schematics
 schematics_url = "https://github.com/ManiiProgramming/ManiiLauncher/releases/download/ModsAndSchematics/schematics.zip"
@@ -70,30 +77,32 @@ def delete_directory(directory):
         print(f"Error deleting {directory}: {e}")
 
 try:
-    delete_directory(r"ManiiLauncher Downloads")
-    create_directory(r"ManiiLauncher Downloads")
+    # Ensure the 'ManiiLauncher Downloads' directory exists
+    create_directory(downloads_folder)
+
+    # Delete any pre-existing files and directories from previous runs
     delete_file(schematics_zip)
     delete_file(mods_zip)
     delete_directory(extract_to1)
     delete_directory(extract_to2)
     print("\nNOTE: This part is only to check for existing files and remove them!\n\n")
 
-
+    # Download the files
     download_file(schematics_url, schematics_zip)
     download_file(mods_url, mods_zip)
 
     input("Mods and Schematics have been downloaded. Press enter to continue...")
     os.system("cls") 
     time.sleep(1)  # Sleep to give a slight delay to make it look like something is happening
-    
 
+    # Extract the downloaded files
     extract_zip(schematics_zip, extract_to1)
-    time.sleep(1) 
+    time.sleep(1)
     extract_zip(mods_zip, extract_to2)
     
     input("Extraction complete. Press enter to delete downloaded files and exit...")
 
-    delete_directory(r"ManiiLauncher Downloads")
+    # Clean up the downloaded files
     delete_file(schematics_zip)
     delete_file(mods_zip)
 
